@@ -618,57 +618,7 @@
     </style>
 </head>
 <body>
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen" style="
-        position: fixed;
-        inset: 0;
-        background: linear-gradient(135deg, #0056a3, #003d7a);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-    ">
-        <div style="
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            width: 360px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            text-align: center;
-        ">
-            <h2 style="margin-bottom: 10px; color:#0056a3;">Office Login</h2>
-            <p style="color:#555; margin-bottom: 25px;">Authorized users only</p>
-
-            <input id="loginUser" placeholder="User ID" style="
-                width:100%; padding:14px; margin-bottom:15px;
-                border-radius:10px; border:1px solid #ccc;
-                font-size: 16px;
-            ">
-
-            <input id="loginPass" type="password" placeholder="Password" style="
-                width:100%; padding:14px; margin-bottom:20px;
-                border-radius:10px; border:1px solid #ccc;
-                font-size: 16px;
-            ">
-
-            <button onclick="checkLogin()" style="
-                width:100%; padding:14px;
-                background:#0056a3; color:white;
-                border:none; border-radius:10px;
-                font-size:16px; cursor:pointer;
-                font-weight: 600;
-                transition: all 0.3s;
-            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,86,163,0.3)'"
-               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Login</button>
-
-            <p id="loginError" style="
-                color:red; margin-top:15px; display:none;
-                font-size: 14px;
-            ">Invalid ID or Password</p>
-        </div>
-    </div>
-
-    <div class="container" style="display: none;">
+    <div class="container">
         <header>
             <div class="logo">
                 <div class="logo-icon">⚡</div>
@@ -689,18 +639,9 @@
                     <label for="monthSelect">Select Month</label>
                     <select id="monthSelect" class="select-input">
                         <option value="" disabled selected>Select a month</option>
-                        <option value="JAN">January (JAN)</option>
-                        <option value="FEB">February (FEB)</option>
-                        <option value="MAR">March (MAR)</option>
-                        <option value="APR">April (APR)</option>
-                        <option value="MAY">May (MAY)</option>
-                        <option value="JUN">June (JUN)</option>
-                        <option value="JUL">July (JUL)</option>
-                        <option value="AUG">August (AUG)</option>
-                        <option value="SEP">September (SEP)</option>
-                        <option value="OCT">October (OCT)</option>
+                       
                         <option value="NOV">November (NOV)</option>
-                        <option value="DEC">December (DEC)</option>
+                        
                     </select>
                 </div>
 
@@ -779,53 +720,6 @@
     </div>
 
     <script>
-        // ===== BASIC OFFICE LOGIN =====
-        // CHANGE THESE VALUES FOR YOUR OFFICE
-        const OFFICE_USER = "pgvcl@";
-        const OFFICE_PASS = "pgvcl@z09#";
-
-        function checkLogin() {
-            const user = document.getElementById('loginUser').value.trim();
-            const pass = document.getElementById('loginPass').value.trim();
-            const error = document.getElementById('loginError');
-
-            if (user === OFFICE_USER && pass === OFFICE_PASS) {
-                sessionStorage.setItem('officeAccess', 'true');
-                document.getElementById('loginScreen').style.display = 'none';
-                document.querySelector('.container').style.display = 'block';
-                // Initialize the main app after successful login
-                init();
-            } else {
-                error.style.display = 'block';
-                // Clear password field
-                document.getElementById('loginPass').value = '';
-                // Shake animation for error
-                error.style.animation = 'none';
-                setTimeout(() => {
-                    error.style.animation = 'slideIn 0.3s ease';
-                }, 10);
-            }
-        }
-
-        // Auto-check on page load
-        window.addEventListener('load', () => {
-            if (sessionStorage.getItem('officeAccess') === 'true') {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.querySelector('.container').style.display = 'block';
-                init();
-            } else {
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.querySelector('.container').style.display = 'none';
-            }
-        });
-
-        // Allow login with Enter key
-        document.getElementById('loginPass').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkLogin();
-            }
-        });
-
         // Set PDF.js worker source
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -1362,6 +1256,9 @@
                 statusIndicator.className = 'status-indicator status-idle';
             }
         }
+
+        // Initialize the application when page loads
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
