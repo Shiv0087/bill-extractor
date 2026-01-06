@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bill Extractor | Internal Tool</title>
-    <!-- PDF.js library for PDF rendering and text extraction -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <!-- PDF-Lib for creating new PDFs -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -29,9 +28,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 24px;
-            box-shadow: 
-                0 20px 60px rgba(0, 86, 163, 0.1),
-                0 0 0 1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 20px 60px rgba(0, 86, 163, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.03);
             overflow: hidden;
             backdrop-filter: blur(10px);
         }
@@ -51,9 +48,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%);
         }
 
         .logo {
@@ -161,92 +156,28 @@
             font-size: 18px;
         }
 
-        .file-input-container {
-            border: 2px dashed #c2c9d1;
-            border-radius: 16px;
-            padding: 40px 30px;
-            text-align: center;
-            background: white;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .file-input-container:hover {
-            border-color: #0056a3;
-            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(0, 86, 163, 0.1);
-        }
-
-        .file-input-container.dragover {
-            border-color: #0056a3;
-            background: linear-gradient(135deg, #e6f2ff 0%, #d4e7ff 100%);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { border-color: #0056a3; }
-            50% { border-color: #28a745; }
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .file-label {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            gap: 20px;
-        }
-
-        .file-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #0056a3 0%, #003d7a 100%);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            color: white;
+        .select-input {
+            width: 100%;
+            padding: 18px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 16px;
             transition: all 0.3s;
-            box-shadow: 0 8px 20px rgba(0, 86, 163, 0.2);
-        }
-
-        .file-input-container:hover .file-icon {
-            transform: scale(1.05) rotate(5deg);
-        }
-
-        .file-text {
-            font-size: 17px;
-            color: #4a5568;
+            background: white;
+            color: #2d3748;
             font-weight: 500;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            background-size: 16px;
         }
 
-        .file-name {
-            font-size: 15px;
-            color: #0056a3;
-            font-weight: 600;
-            background: rgba(0, 86, 163, 0.1);
-            padding: 12px 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .file-name::before {
-            content: '📄';
-            font-size: 14px;
+        .select-input:focus {
+            outline: none;
+            border-color: #0056a3;
+            box-shadow: 0 0 0 4px rgba(0, 86, 163, 0.15);
+            background: white;
         }
 
         .text-input {
@@ -354,14 +285,8 @@
         }
 
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .progress-text {
@@ -476,14 +401,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         .pdf-viewer {
@@ -643,70 +562,22 @@
         }
 
         @media (max-width: 1024px) {
-            .main-content {
-                flex-direction: column;
-                padding: 32px;
-            }
-            
-            .input-panel, .result-panel {
-                min-width: 100%;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-            
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-                gap: 16px;
-            }
+            .main-content { flex-direction: column; padding: 32px; }
+            .input-panel, .result-panel { min-width: 100%; }
+            .button-group { flex-direction: column; }
+            .footer-content { flex-direction: column; text-align: center; gap: 16px; }
         }
 
         @media (max-width: 640px) {
-            body {
-                padding: 12px;
-            }
-            
-            .container {
-                border-radius: 20px;
-            }
-            
-            header {
-                padding: 24px;
-            }
-            
-            .main-content {
-                padding: 24px;
-                gap: 24px;
-            }
-            
-            .input-panel, .result-panel {
-                padding: 24px;
-            }
-            
-            .logo {
-                flex-direction: column;
-                text-align: center;
-                gap: 16px;
-            }
-            
-            .logo-text h1 {
-                font-size: 28px;
-            }
-            
-            .instructions li {
-                padding: 16px 16px 16px 55px;
-                min-height: 55px;
-                font-size: 14.5px;
-            }
-            
-            .instructions li::before {
-                left: 16px;
-                width: 28px;
-                height: 28px;
-                font-size: 13px;
-            }
+            body { padding: 12px; }
+            .container { border-radius: 20px; }
+            header { padding: 24px; }
+            .main-content { padding: 24px; gap: 24px; }
+            .input-panel, .result-panel { padding: 24px; }
+            .logo { flex-direction: column; text-align: center; gap: 16px; }
+            .logo-text h1 { font-size: 28px; }
+            .instructions li { padding: 16px 16px 16px 55px; min-height: 55px; font-size: 14.5px; }
+            .instructions li::before { left: 16px; width: 28px; height: 28px; font-size: 13px; }
         }
 
         .status-indicator {
@@ -734,10 +605,70 @@
         .search-icon {
             font-size: 20px;
         }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" style="
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(135deg, #0056a3, #003d7a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    ">
+        <div style="
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 360px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        ">
+            <h2 style="margin-bottom: 10px; color:#0056a3;">Office Login</h2>
+            <p style="color:#555; margin-bottom: 25px;">Authorized users only</p>
+
+            <input id="loginUser" placeholder="User ID" style="
+                width:100%; padding:14px; margin-bottom:15px;
+                border-radius:10px; border:1px solid #ccc;
+                font-size: 16px;
+            ">
+
+            <input id="loginPass" type="password" placeholder="Password" style="
+                width:100%; padding:14px; margin-bottom:20px;
+                border-radius:10px; border:1px solid #ccc;
+                font-size: 16px;
+            ">
+
+            <button onclick="checkLogin()" style="
+                width:100%; padding:14px;
+                background:#0056a3; color:white;
+                border:none; border-radius:10px;
+                font-size:16px; cursor:pointer;
+                font-weight: 600;
+                transition: all 0.3s;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(0,86,163,0.3)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Login</button>
+
+            <p id="loginError" style="
+                color:red; margin-top:15px; display:none;
+                font-size: 14px;
+            ">Invalid ID or Password</p>
+        </div>
+    </div>
+
+    <div class="container" style="display: none;">
         <header>
             <div class="logo">
                 <div class="logo-icon">⚡</div>
@@ -749,31 +680,33 @@
         </header>
 
         <div class="main-content">
-            <!-- Left panel: Input controls -->
             <div class="input-panel">
                 <h2 class="panel-title">Bill Search
                     <span class="status-indicator status-idle" id="statusIndicator">Ready</span>
                 </h2>
                 
                 <div class="form-group">
-                    <label for="pdfFile">Select Monthly PDF File</label>
-                    <div class="file-input-container" id="fileDropArea">
-                        <input type="file" id="pdfFile" class="file-input" accept=".pdf">
-                        <label for="pdfFile" class="file-label">
-                            <div class="file-icon">📁</div>
-                            <div>
-                                <div class="file-text">Click to select or drag & drop PDF file</div>
-                                <div class="file-text"><small>Supports large files up to 500MB</small></div>
-                            </div>
-                            <div id="fileName" class="file-name">No file selected</div>
-                        </label>
-                    </div>
+                    <label for="monthSelect">Select Month</label>
+                    <select id="monthSelect" class="select-input">
+                        <option value="" disabled selected>Select a month</option>
+                        <option value="JAN">January (JAN)</option>
+                        <option value="FEB">February (FEB)</option>
+                        <option value="MAR">March (MAR)</option>
+                        <option value="APR">April (APR)</option>
+                        <option value="MAY">May (MAY)</option>
+                        <option value="JUN">June (JUN)</option>
+                        <option value="JUL">July (JUL)</option>
+                        <option value="AUG">August (AUG)</option>
+                        <option value="SEP">September (SEP)</option>
+                        <option value="OCT">October (OCT)</option>
+                        <option value="NOV">November (NOV)</option>
+                        <option value="DEC">December (DEC)</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
                     <label for="consumerNumber">Consumer Number</label>
-                    <input type="text" id="consumerNumber" class="text-input" 
-                           placeholder="Enter consumer number (e.g., 88249090136)">
+                    <input type="text" id="consumerNumber" class="text-input" placeholder="Enter consumer number (e.g., 88249090136)">
                 </div>
 
                 <button id="searchButton" class="button" disabled>
@@ -792,8 +725,7 @@
                 <div class="instructions">
                     <h3>How to Use:</h3>
                     <ol>
-                        <li>Select the monthly PDF file containing all customer bills</li>
-                        <li>Enter the consumer number you want to search for</li>
+                        <li>Select month and enter consumer number</li>
                         <li>Click "Search PDF for Consumer Bill"</li>
                         <li>The system will scan the PDF and extract the matching page</li>
                         <li>Download or print the extracted bill</li>
@@ -804,7 +736,6 @@
                 </div>
             </div>
 
-            <!-- Right panel: Results -->
             <div class="result-panel">
                 <h2 class="panel-title">Extracted Bill</h2>
                 
@@ -813,7 +744,7 @@
                         <div class="placeholder-icon">📄</div>
                         <div class="placeholder-text">
                             <h3>No bill extracted yet</h3>
-                            <p>Select a PDF file and enter a consumer number to search for a bill</p>
+                            <p>Select month and enter consumer number to search for a bill</p>
                         </div>
                     </div>
                     
@@ -848,23 +779,71 @@
     </div>
 
     <script>
-        // Application state
+        // ===== BASIC OFFICE LOGIN =====
+        // CHANGE THESE VALUES FOR YOUR OFFICE
+        const OFFICE_USER = "pgvcl@";
+        const OFFICE_PASS = "pgvcl@z09#";
+
+        function checkLogin() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+            const error = document.getElementById('loginError');
+
+            if (user === OFFICE_USER && pass === OFFICE_PASS) {
+                sessionStorage.setItem('officeAccess', 'true');
+                document.getElementById('loginScreen').style.display = 'none';
+                document.querySelector('.container').style.display = 'block';
+                // Initialize the main app after successful login
+                init();
+            } else {
+                error.style.display = 'block';
+                // Clear password field
+                document.getElementById('loginPass').value = '';
+                // Shake animation for error
+                error.style.animation = 'none';
+                setTimeout(() => {
+                    error.style.animation = 'slideIn 0.3s ease';
+                }, 10);
+            }
+        }
+
+        // Auto-check on page load
+        window.addEventListener('load', () => {
+            if (sessionStorage.getItem('officeAccess') === 'true') {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.querySelector('.container').style.display = 'block';
+                init();
+            } else {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.querySelector('.container').style.display = 'none';
+            }
+        });
+
+        // Allow login with Enter key
+        document.getElementById('loginPass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkLogin();
+            }
+        });
+
+        // Set PDF.js worker source
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
         const state = {
             pdfFile: null,
             pdfDoc: null,
             extractedPdf: null,
             extractedPdfUrl: null,
+            extractedFileName: '',
             consumerNumber: '',
+            selectedMonth: '',
             isProcessing: false,
             totalPages: 0,
             currentPage: 0,
             matchedPage: null
         };
 
-        // DOM elements
-        const pdfFileInput = document.getElementById('pdfFile');
-        const fileDropArea = document.getElementById('fileDropArea');
-        const fileNameDisplay = document.getElementById('fileName');
+        const monthSelect = document.getElementById('monthSelect');
         const consumerNumberInput = document.getElementById('consumerNumber');
         const searchButton = document.getElementById('searchButton');
         const progressContainer = document.getElementById('progressContainer');
@@ -880,199 +859,143 @@
         const statusIndicator = document.getElementById('statusIndicator');
         const resultContainer = document.getElementById('resultContainer');
 
-        // Helper function to extract all numbers from text
-        function extractAllNumbers(text) {
-            // Remove all non-digit characters and split by any non-digit
-            const numbers = text.replace(/\D+/g, ' ').trim().split(' ');
-            
-            // Filter out empty strings and return all numbers
-            return numbers.filter(num => num.length > 0);
-        }
-
-        // Initialize the application
         function init() {
             setupEventListeners();
             updateUI();
-            showMessage('info', 'Ready to process PDF files. Select a file and enter a consumer number to begin.');
+            showMessage('info', 'Select month and enter consumer number to begin.');
         }
 
-        // Set up all event listeners
         function setupEventListeners() {
-            // File input change
-            pdfFileInput.addEventListener('change', handleFileSelect);
-            
-            // Drag and drop for files
-            fileDropArea.addEventListener('dragover', handleDragOver);
-            fileDropArea.addEventListener('dragleave', handleDragLeave);
-            fileDropArea.addEventListener('drop', handleFileDrop);
-            
-            // Consumer number input
+            monthSelect.addEventListener('change', handleMonthSelect);
             consumerNumberInput.addEventListener('input', handleConsumerNumberInput);
-            
-            // Search button
             searchButton.addEventListener('click', handleSearch);
-            
-            // Download button
             downloadButton.addEventListener('click', handleDownload);
-            
-            // Print button
             printButton.addEventListener('click', handlePrint);
         }
 
-        // Handle file selection via file input
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file && file.type === 'application/pdf') {
-                state.pdfFile = file;
-                fileNameDisplay.textContent = `${file.name} (${formatFileSize(file.size)})`;
-                validateForm();
-            } else {
-                showMessage('error', 'Please select a valid PDF file.');
-                state.pdfFile = null;
-                fileNameDisplay.textContent = 'No file selected';
-            }
-            updateUI();
-        }
-
-        // Handle drag over event for file drop
-        function handleDragOver(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            fileDropArea.classList.add('dragover');
-        }
-
-        // Handle drag leave event for file drop
-        function handleDragLeave(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            fileDropArea.classList.remove('dragover');
-        }
-
-        // Handle file drop
-        function handleFileDrop(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            fileDropArea.classList.remove('dragover');
-            
-            const file = event.dataTransfer.files[0];
-            if (file && file.type === 'application/pdf') {
-                state.pdfFile = file;
-                fileNameDisplay.textContent = `${file.name} (${formatFileSize(file.size)})`;
-                // Update the file input for consistency
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                pdfFileInput.files = dataTransfer.files;
-                validateForm();
-            } else {
-                showMessage('error', 'Please drop a valid PDF file.');
-                state.pdfFile = null;
-                fileNameDisplay.textContent = 'No file selected';
-            }
-            updateUI();
-        }
-
-        // Handle consumer number input
-        function handleConsumerNumberInput(event) {
-            state.consumerNumber = event.target.value.trim();
+        function handleMonthSelect(event) {
+            state.selectedMonth = event.target.value;
             validateForm();
             updateUI();
         }
 
-        // Validate form inputs
-        function validateForm() {
-            const hasFile = !!state.pdfFile;
-            const hasConsumerNumber = state.consumerNumber.length > 0;
-            searchButton.disabled = !(hasFile && hasConsumerNumber) || state.isProcessing;
+        function handleConsumerNumberInput(event) {
+            state.consumerNumber = event.target.value.replace(/\D/g, '');
+            event.target.value = state.consumerNumber;
+            validateForm();
+            updateUI();
         }
 
-        // Main search function
+        function validateForm() {
+            const hasMonth = !!state.selectedMonth;
+            const hasConsumerNumber = state.consumerNumber.length > 0;
+            searchButton.disabled = !(hasMonth && hasConsumerNumber) || state.isProcessing;
+        }
+
         async function handleSearch() {
-            if (!state.pdfFile || !state.consumerNumber || state.isProcessing) return;
+            if (!state.selectedMonth || !state.consumerNumber || state.isProcessing) return;
             
-            // Reset previous results
             resetResults();
             state.isProcessing = true;
             state.matchedPage = null;
             updateUI();
             
             try {
-                showMessage('info', 'Starting PDF processing. This may take a moment for large files...');
+                showMessage('info', `Loading ${state.selectedMonth}.pdf...`);
                 
-                // Step 1: Load the PDF document using PDF.js
+                await fetchPdfFromServer();
                 await loadPdfDocument();
-                
-                // Step 2: Search for consumer number in PDF pages
                 await searchPdfPages();
                 
-                // Step 3: If found, extract the page
                 if (state.matchedPage !== null) {
                     await extractPdfPage();
                     showMessage('success', `Bill found for consumer ${state.consumerNumber} on page ${state.matchedPage + 1}`);
                 } else {
-                    showMessage('error', `Consumer number ${state.consumerNumber} not found in the PDF.`);
+                    showMessage('error', `Consumer number ${state.consumerNumber} not found in ${state.selectedMonth}.pdf`);
                 }
                 
             } catch (error) {
                 console.error('Error during PDF processing:', error);
-                showMessage('error', `Error processing PDF: ${error.message}`);
+                showMessage('error', `Error: ${error.message}`);
             } finally {
                 state.isProcessing = false;
                 updateUI();
             }
         }
 
-        // Load PDF document using PDF.js with streaming support
-        async function loadPdfDocument() {
-            showProgress('Loading PDF document...', 0);
-            
-            // Create a URL for the file to be used by PDF.js
-            const fileURL = URL.createObjectURL(state.pdfFile);
-            
-            // Configure PDF.js worker
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        async function fetchPdfFromServer() {
+            showProgress(`Fetching ${state.selectedMonth}.pdf...`, 0);
             
             try {
-                // Load the PDF with streaming enabled for large files
+                const timestamp = Date.now();
+                const pdfUrl = `https://shiv0087.github.io/bill-extractor/pdfs/${state.selectedMonth}.pdf?t=${timestamp}`;
+                
+                showProgress(`Downloading PDF...`, 10);
+                
+                const response = await fetch(pdfUrl, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+                }
+                
+                const arrayBuffer = await response.arrayBuffer();
+                
+                if (arrayBuffer.byteLength === 0) {
+                    throw new Error('PDF file is empty');
+                }
+                
+                state.pdfFile = new Uint8Array(arrayBuffer);
+                
+                showProgress(`PDF loaded (${Math.round(arrayBuffer.byteLength / 1024)} KB)`, 30);
+                
+            } catch (error) {
+                console.error('Error fetching PDF:', error);
+                throw new Error(`Could not load ${state.selectedMonth}.pdf`);
+            }
+        }
+
+        async function loadPdfDocument() {
+            showProgress('Parsing PDF document...', 40);
+            
+            if (!state.pdfFile || state.pdfFile.length === 0) {
+                throw new Error('No PDF data loaded');
+            }
+            
+            try {
                 const loadingTask = pdfjsLib.getDocument({
-                    url: fileURL,
-                    // Enable streaming for large files
+                    data: state.pdfFile,
                     disableStream: false,
                     disableRange: false,
-                    // Use worker for better performance
-                    worker: true
+                    verbosity: 0
                 });
                 
                 state.pdfDoc = await loadingTask.promise;
                 state.totalPages = state.pdfDoc.numPages;
                 
-                // Clean up the object URL
-                URL.revokeObjectURL(fileURL);
-                
-                showProgress(`PDF loaded. Total pages: ${state.totalPages}`, 5);
+                showProgress(`PDF parsed. Total pages: ${state.totalPages}`, 50);
                 
             } catch (error) {
-                // Clean up the object URL in case of error
-                URL.revokeObjectURL(fileURL);
-                throw error;
+                console.error('Error loading PDF:', error);
+                throw new Error('Failed to parse PDF. It may be corrupted.');
             }
         }
 
-        // Search PDF pages for consumer number
         async function searchPdfPages() {
             if (!state.pdfDoc) return;
             
-            showProgress('Scanning PDF pages for consumer number...', 5);
+            showProgress('Scanning for consumer number...', 60);
             
-            // We'll process pages in batches to avoid freezing the browser
-            const batchSize = 10;
+            const batchSize = 3; // Optimized for office PCs
             
             for (let pageNum = 1; pageNum <= state.totalPages; pageNum += batchSize) {
-                // Update progress
-                const progressPercent = Math.min(5 + (pageNum / state.totalPages * 90), 95);
+                const progressPercent = Math.min(60 + (pageNum / state.totalPages * 30), 90);
                 showProgress(`Scanning page ${pageNum} of ${state.totalPages}...`, progressPercent);
                 pageCounter.textContent = `Page ${pageNum} of ${state.totalPages}`;
                 
-                // Process a batch of pages
                 const endPage = Math.min(pageNum + batchSize - 1, state.totalPages);
                 const batchPromises = [];
                 
@@ -1080,251 +1003,247 @@
                     batchPromises.push(processPage(i));
                 }
                 
-                // Wait for the batch to complete
                 const results = await Promise.all(batchPromises);
                 
-                // Check if we found a match in this batch
-                const matchedPageIndex = results.findIndex(result => result.found);
-                if (matchedPageIndex !== -1) {
-                    state.matchedPage = pageNum + matchedPageIndex - 1; // Convert to 0-based index
-                    showProgress(`Consumer number found on page ${state.matchedPage + 1}`, 100);
-                    return; // Exit early since we found a match
+                const matchedResult = results.find(result => result.found);
+                if (matchedResult) {
+                    state.matchedPage = matchedResult.pageNum - 1;
+                    showProgress(`✓ Found on page ${state.matchedPage + 1}`, 95);
+                    pageCounter.textContent = `Found on page ${state.matchedPage + 1} of ${state.totalPages}`;
+                    return; // Stop scanning immediately
                 }
                 
-                // Allow UI to update between batches
-                await new Promise(resolve => setTimeout(resolve, 10));
+                await new Promise(resolve => setTimeout(resolve, 50));
             }
             
-            // If we get here, no match was found
-            showProgress('Scan complete. Consumer number not found.', 100);
+            showProgress('✗ Consumer number not found', 100);
+            pageCounter.textContent = `Scanned all ${state.totalPages} pages`;
         }
 
-        // Process a single page to search for consumer number
         async function processPage(pageNum) {
             try {
                 const page = await state.pdfDoc.getPage(pageNum);
                 const textContent = await page.getTextContent();
-                
-                // Concatenate all text items
                 const pageText = textContent.items.map(item => item.str).join(' ');
                 
-                // Extract ALL numbers from the page text
-                const allNumbers = extractAllNumbers(pageText);
-                
-                // Check if the exact consumer number exists in the extracted numbers
-                // This ensures no partial matches (e.g., "8824907887" won't match "88249078870")
-                const found = allNumbers.some(num => num === state.consumerNumber);
-                
-                // Clean up
                 page.cleanup();
+                
+                // Optimized search - direct string match
+                const normalizedText = pageText.replace(/\s+/g, '');
+                const found = normalizedText.includes(state.consumerNumber);
                 
                 return { pageNum, found };
             } catch (error) {
-                console.error(`Error processing page ${pageNum}:`, error);
+                console.warn(`Error processing page ${pageNum}:`, error);
                 return { pageNum, found: false };
             }
         }
 
-        // Extract the matched page and create a new PDF
         async function extractPdfPage() {
             if (state.matchedPage === null || !state.pdfDoc) return;
             
-            showProgress('Extracting bill page...', 95);
+            showProgress('Creating original quality PDF...', 95);
             
             try {
-                // Clean up previous extracted PDF URL
+                // Clean up previous URL
                 if (state.extractedPdfUrl) {
                     URL.revokeObjectURL(state.extractedPdfUrl);
-                    state.extractedPdfUrl = null;
                 }
                 
-                // Get the matched page index (1-based for PDF.js)
-                const pageIndex = state.matchedPage + 1;
+                // SET FILENAME TO JUST CONSUMER NUMBER
+                state.extractedFileName = `${state.consumerNumber}.pdf`;
                 
-                // Method: Extract page using pdf-lib (more reliable)
-                // Get the original PDF as array buffer
-                const arrayBuffer = await state.pdfFile.arrayBuffer();
+                // USE PDF-LIB FOR ORIGINAL QUALITY (FIRST CHOICE)
+                try {
+                    const { PDFDocument } = PDFLib;
+                    
+                    // Load the original PDF
+                    const originalPdf = await PDFDocument.load(state.pdfFile, {
+                        ignoreEncryption: true,
+                        updateMetadata: false
+                    });
+                    
+                    // Create new PDF
+                    const newPdf = await PDFDocument.create();
+                    
+                    // Copy the specific page (ORIGINAL QUALITY)
+                    const [copiedPage] = await newPdf.copyPages(originalPdf, [state.matchedPage]);
+                    newPdf.addPage(copiedPage);
+                    
+                    // Add metadata
+                    newPdf.setTitle(`Electricity Bill - Consumer ${state.consumerNumber} - ${state.selectedMonth}`);
+                    newPdf.setAuthor('Bill Extractor Tool');
+                    newPdf.setSubject(`Extracted bill for consumer ${state.consumerNumber}`);
+                    newPdf.setKeywords([state.consumerNumber, state.selectedMonth, 'electricity bill']);
+                    newPdf.setCreationDate(new Date());
+                    newPdf.setModificationDate(new Date());
+                    
+                    // Save the PDF - ORIGINAL QUALITY
+                    const pdfBytes = await newPdf.save();
+                    state.extractedPdf = new Blob([pdfBytes], { type: 'application/pdf' });
+                    state.extractedPdfUrl = URL.createObjectURL(state.extractedPdf);
+                    
+                    showMessage('info', 'Original PDF quality extracted successfully');
+                    
+                } catch (pdfLibError) {
+                    console.log('PDF-Lib failed, trying high-quality canvas method...', pdfLibError);
+                    
+                    // FALLBACK: HIGH QUALITY CANVAS METHOD (ORIGINAL QUALITY)
+                    const page = await state.pdfDoc.getPage(state.matchedPage + 1);
+                    
+                    // Use HIGH QUALITY scale for original quality
+                    const viewport = page.getViewport({ scale: 2.0 });
+                    
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+                    
+                    // Use PNG for ORIGINAL QUALITY (no compression loss)
+                    const imgData = canvas.toDataURL('image/png', 1.0);
+                    
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({
+                        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+                        unit: 'px',
+                        format: [canvas.width, canvas.height]
+                    });
+                    
+                    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                    
+                    // Set PDF metadata
+                    pdf.setProperties({
+                        title: `Bill - Consumer ${state.consumerNumber} - ${state.selectedMonth}`,
+                        subject: `Extracted electricity bill (Original Quality)`,
+                        author: 'Bill Extractor Tool',
+                        keywords: `bill, electricity, ${state.consumerNumber}, ${state.selectedMonth}`,
+                        creator: 'Bill Extractor'
+                    });
+                    
+                    const pdfBytes = pdf.output('arraybuffer');
+                    state.extractedPdf = new Blob([pdfBytes], { type: 'application/pdf' });
+                    state.extractedPdfUrl = URL.createObjectURL(state.extractedPdf);
+                    
+                    // Clean up
+                    page.cleanup();
+                    canvas.remove();
+                    
+                    showMessage('info', 'High-quality image PDF created (original extraction failed)');
+                }
                 
-                // Load the original PDF with pdf-lib
-                const { PDFDocument } = PDFLib;
-                const originalPdf = await PDFDocument.load(arrayBuffer);
-                
-                // Create a new PDF
-                const newPdf = await PDFDocument.create();
-                
-                // Copy the matched page from original PDF
-                const [copiedPage] = await newPdf.copyPages(originalPdf, [state.matchedPage]);
-                newPdf.addPage(copiedPage);
-                
-                // Add metadata to the new PDF
-                newPdf.setTitle(`Bill - Consumer ${state.consumerNumber}`);
-                newPdf.setAuthor('Bill Extractor');
-                newPdf.setSubject(`Extracted bill for consumer ${state.consumerNumber}`);
-                newPdf.setKeywords(['Electricity Bill', state.consumerNumber]);
-                newPdf.setProducer('Bill Extractor Tool');
-                newPdf.setCreator('Internal Tool');
-                newPdf.setCreationDate(new Date());
-                newPdf.setModificationDate(new Date());
-                
-                // Save the new PDF
-                const pdfBytes = await newPdf.save();
-                
-                // Create a Blob from the PDF bytes
-                state.extractedPdf = new Blob([pdfBytes], { type: 'application/pdf' });
-                
-                // Create object URL for the extracted PDF
-                state.extractedPdfUrl = URL.createObjectURL(state.extractedPdf);
-                
-                // Display the extracted PDF
                 displayExtractedPdf();
-                
-                showProgress('Bill extracted successfully!', 100);
+                showProgress('✓ PDF created successfully', 100);
                 
             } catch (error) {
-                console.error('Error extracting PDF page:', error);
-                
-                // Fallback method: Create a simple PDF with extraction info
-                try {
-                    await createFallbackPdf();
-                } catch (fallbackError) {
-                    console.error('Fallback PDF creation also failed:', fallbackError);
-                    throw new Error('Failed to extract PDF page. Please try with a different PDF file.');
+                console.error('All extraction methods failed:', error);
+                showMessage('error', 'Could not extract PDF. Creating location guide instead.');
+                await createLocationGuide();
+            } finally {
+                // Memory cleanup after successful extraction
+                if (state.pdfDoc) {
+                    state.pdfDoc.cleanup?.();
+                    state.pdfDoc = null;
                 }
             }
         }
 
-        // Create a fallback PDF when direct extraction fails
-        async function createFallbackPdf() {
+        async function createLocationGuide() {
+            // Create a helpful guide PDF
             const { PDFDocument, StandardFonts, rgb } = PDFLib;
             const newPdf = await PDFDocument.create();
+            const page = newPdf.addPage([595, 842]);
             
-            // Add a page
-            const page = newPdf.addPage([595, 842]); // A4 size
-            
-            // Get fonts
             const helveticaFont = await newPdf.embedFont(StandardFonts.Helvetica);
             const helveticaBold = await newPdf.embedFont(StandardFonts.HelveticaBold);
             
-            // Add title
-            page.drawText('ELECTRICITY BILL EXTRACT', {
-                x: 50,
-                y: 750,
-                size: 24,
-                font: helveticaBold,
-                color: rgb(0, 0.33, 0.65)
+            // Header
+            page.drawText(`BILL LOCATION GUIDE`, {
+                x: 50, y: 750, size: 24, font: helveticaBold, color: rgb(0, 0.33, 0.65)
             });
             
-            // Add consumer info
-            page.drawText(`Consumer Number: ${state.consumerNumber}`, {
-                x: 50,
-                y: 700,
-                size: 16,
-                font: helveticaBold
+            // Consumer Info
+            page.drawText(`Consumer Number:`, { x: 50, y: 700, size: 14, font: helveticaBold });
+            page.drawText(`${state.consumerNumber}`, { x: 200, y: 700, size: 16, font: helveticaBold, color: rgb(0.8, 0, 0) });
+            
+            page.drawText(`Month:`, { x: 50, y: 670, size: 14, font: helveticaBold });
+            page.drawText(`${state.selectedMonth}`, { x: 200, y: 670, size: 16, font: helveticaBold });
+            
+            // Page Location Box
+            page.drawRectangle({
+                x: 50, y: 600, width: 500, height: 100,
+                borderWidth: 2,
+                borderColor: rgb(0, 0.33, 0.65),
+                color: rgb(0.9, 0.95, 1)
             });
             
-            page.drawText(`Original PDF: ${state.pdfFile.name}`, {
-                x: 50,
-                y: 670,
-                size: 12,
-                font: helveticaFont
+            page.drawText(`📍 BILL LOCATION`, { x: 70, y: 675, size: 18, font: helveticaBold });
+            page.drawText(`Page Number:`, { x: 70, y: 640, size: 16, font: helveticaBold });
+            page.drawText(`${state.matchedPage + 1} of ${state.totalPages}`, { 
+                x: 200, y: 640, size: 24, font: helveticaBold, color: rgb(0, 0.33, 0.65) 
             });
             
-            page.drawText(`Page Number: ${state.matchedPage + 1}`, {
-                x: 50,
-                y: 640,
-                size: 12,
-                font: helveticaFont
+            // Instructions
+            page.drawText(`Instructions:`, { x: 50, y: 550, size: 16, font: helveticaBold });
+            
+            const instructions = [
+                `1. Open ${state.selectedMonth}.pdf file`,
+                `2. Navigate to page ${state.matchedPage + 1}`,
+                `3. Print or save that specific page`,
+                `4. Bill is now extracted for consumer ${state.consumerNumber}`
+            ];
+            
+            instructions.forEach((instruction, index) => {
+                page.drawText(instruction, { x: 70, y: 520 - (index * 25), size: 12, font: helveticaFont });
             });
             
-            page.drawText(`Extraction Date: ${new Date().toLocaleDateString()}`, {
-                x: 50,
-                y: 610,
-                size: 12,
-                font: helveticaFont
-            });
+            // Download link
+            page.drawText(`Original PDF:`, { x: 50, y: 400, size: 12, font: helveticaBold });
+            page.drawText(`https://shiv0087.github.io/bill-extractor/pdfs/${state.selectedMonth}.pdf`, 
+                { x: 50, y: 380, size: 10, font: helveticaFont, color: rgb(0, 0, 0.8) });
             
-            // Add note
-            page.drawText('Note:', {
-                x: 50,
-                y: 550,
-                size: 14,
-                font: helveticaBold
-            });
+            // Footer
+            page.drawText(`Generated by Bill Extractor • ${new Date().toLocaleDateString()}`, 
+                { x: 50, y: 50, size: 10, font: helveticaFont, color: rgb(0.5, 0.5, 0.5) });
             
-            page.drawText('The original PDF page could not be directly extracted, but the consumer number', {
-                x: 50,
-                y: 520,
-                size: 12,
-                font: helveticaFont
-            });
-            
-            page.drawText(`was found on page ${state.matchedPage + 1}. Please refer to the original PDF file`, {
-                x: 50,
-                y: 500,
-                size: 12,
-                font: helveticaFont
-            });
-            
-            page.drawText('for the complete bill details.', {
-                x: 50,
-                y: 480,
-                size: 12,
-                font: helveticaFont
-            });
-            
-            // Save the new PDF
             const pdfBytes = await newPdf.save();
-            
-            // Create a Blob from the PDF bytes
             state.extractedPdf = new Blob([pdfBytes], { type: 'application/pdf' });
-            
-            // Create object URL for the extracted PDF
             state.extractedPdfUrl = URL.createObjectURL(state.extractedPdf);
-            
-            // Display the extracted PDF
-            displayExtractedPdf();
-            
-            showMessage('info', 'Bill location found. Created extraction summary instead of original page.');
+            // SET FILENAME TO CONSUMER NUMBER + GUIDE
+            state.extractedFileName = `${state.consumerNumber}_GUIDE.pdf`;
         }
 
-        // Display the extracted PDF in the viewer
         function displayExtractedPdf() {
             if (!state.extractedPdfUrl) return;
             
-            // Set the iframe source to display the PDF
-            pdfViewer.src = state.extractedPdfUrl;
+            pdfViewer.src = state.extractedPdfUrl + '#toolbar=1&navpanes=0&scrollbar=1';
             
-            // Show the viewer and hide the placeholder
             resultPlaceholder.style.display = 'none';
             resultViewer.classList.add('active');
             resultContainer.classList.add('has-pdf');
             
-            // Enable download and print buttons
             downloadButton.disabled = false;
             printButton.disabled = false;
         }
 
-        // Handle download of extracted PDF
         function handleDownload() {
-            if (!state.extractedPdf) {
-                showMessage('error', 'No extracted PDF available to download.');
+            if (!state.extractedPdf || !state.extractedPdfUrl) {
+                showMessage('error', 'No PDF available to download.');
                 return;
             }
             
             try {
-                // Create a download link
-                const downloadUrl = state.extractedPdfUrl;
+                // Use the pre-set filename (just consumer number)
+                const fileName = state.extractedFileName;
                 
-                // Use only consumer number as filename (e.g., "88249090136.pdf")
-                const fileName = `${state.consumerNumber}.pdf`;
-                
-                // Create a temporary anchor element
                 const a = document.createElement('a');
-                a.href = downloadUrl;
+                a.href = state.extractedPdfUrl;
                 a.download = fileName;
                 a.style.display = 'none';
-                
-                // Append to body, click, and remove
                 document.body.appendChild(a);
                 a.click();
                 
@@ -1333,30 +1252,27 @@
                     document.body.removeChild(a);
                 }, 100);
                 
-                showMessage('success', `Download started: ${fileName}`);
+                showMessage('success', `Downloading: ${fileName} (Original Quality)`);
                 
             } catch (error) {
                 console.error('Download error:', error);
-                showMessage('error', `Download failed: ${error.message}`);
+                showMessage('error', 'Download failed. Please try again.');
             }
         }
 
-        // Handle printing of extracted PDF
         function handlePrint() {
             if (!state.extractedPdfUrl) {
-                showMessage('error', 'No extracted PDF available to print.');
+                showMessage('error', 'No PDF available to print.');
                 return;
             }
             
             try {
-                // Open the PDF in a new window for printing
-                const printWindow = window.open(state.extractedPdfUrl);
-                
+                const printWindow = window.open(state.extractedPdfUrl, '_blank');
                 if (printWindow) {
-                    // Wait for the PDF to load
                     printWindow.onload = function() {
                         setTimeout(() => {
                             printWindow.print();
+                            showMessage('info', 'Print dialog opened.');
                         }, 500);
                     };
                 } else {
@@ -1364,107 +1280,72 @@
                 }
             } catch (error) {
                 console.error('Print error:', error);
-                showMessage('error', `Print failed: ${error.message}`);
+                showMessage('error', 'Print failed. Try downloading and printing manually.');
             }
         }
 
-        // Show progress indicator
         function showProgress(text, percent) {
             progressText.textContent = text;
             progressFill.style.width = `${percent}%`;
-            
             if (!progressContainer.classList.contains('active')) {
                 progressContainer.classList.add('active');
             }
         }
 
-        // Show message in message area
         function showMessage(type, text) {
             messageArea.textContent = text;
             messageArea.className = `message ${type}`;
             
-            // Auto-hide success messages after 5 seconds
             if (type === 'success') {
                 setTimeout(() => {
-                    messageArea.className = 'message';
+                    if (messageArea.className.includes('success')) {
+                        messageArea.className = 'message';
+                    }
                 }, 5000);
             }
         }
 
-        // Reset results
         function resetResults() {
-            // Clean up previous PDF URLs
             if (state.extractedPdfUrl) {
                 URL.revokeObjectURL(state.extractedPdfUrl);
-                state.extractedPdfUrl = null;
             }
             
-            if (pdfViewer.src) {
-                pdfViewer.src = '';
-            }
-            
-            // Reset viewer
+            pdfViewer.src = '';
             resultViewer.classList.remove('active');
-            resultPlaceholder.style.display = 'block';
+            resultPlaceholder.style.display = 'flex';
             resultContainer.classList.remove('has-pdf');
             
-            // Disable buttons
             downloadButton.disabled = true;
             printButton.disabled = true;
             
-            // Clear extracted PDF
             state.extractedPdf = null;
             state.extractedPdfUrl = null;
+            state.extractedFileName = '';
+            state.matchedPage = null;
+            
+            progressFill.style.width = '0%';
+            pageCounter.textContent = 'Page 0 of 0';
         }
 
-        // Format file size for display
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // Update UI based on application state
         function updateUI() {
             validateForm();
             
             if (state.isProcessing) {
-                searchButton.textContent = 'Processing...';
+                searchButton.innerHTML = '<span class="search-icon">⏳</span> Processing...';
                 searchButton.disabled = true;
                 statusIndicator.textContent = 'Processing';
                 statusIndicator.className = 'status-indicator status-processing';
-            } else {
-                searchButton.innerHTML = '<span class="search-icon">🔍</span> Search PDF for Consumer Bill';
-                if (state.pdfFile && state.consumerNumber) {
-                    statusIndicator.textContent = 'Ready to Search';
-                    statusIndicator.className = 'status-indicator status-idle';
-                } else {
-                    statusIndicator.textContent = 'Ready';
-                    statusIndicator.className = 'status-indicator status-idle';
-                }
-            }
-            
-            // Show/hide progress container
-            if (state.isProcessing) {
                 progressContainer.classList.add('active');
             } else {
-                // Don't hide immediately after completion - wait a moment
-                if (state.matchedPage !== null || state.totalPages > 0) {
-                    setTimeout(() => {
-                        if (!state.isProcessing) {
-                            progressContainer.classList.remove('active');
-                        }
-                    }, 2000);
+                searchButton.innerHTML = '<span class="search-icon">🔍</span> Search PDF for Consumer Bill';
+                if (state.selectedMonth && state.consumerNumber) {
+                    statusIndicator.textContent = 'Ready to Search';
                 } else {
-                    progressContainer.classList.remove('active');
+                    statusIndicator.textContent = 'Ready';
                 }
+                statusIndicator.className = 'status-indicator status-idle';
             }
         }
-
-        // Initialize the application when the page loads
-        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
