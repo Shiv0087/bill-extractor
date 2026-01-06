@@ -715,7 +715,7 @@
                 </button>
                 
                 <div class="progress-container" id="progressContainer">
-                    <div class="progress-text" id="progressText">Preparing to scan PDF...</div>
+                    <div class="progress-text" id="progressText">Preparing to search...</div>
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill"></div>
                     </div>
@@ -727,11 +727,11 @@
                     <ol>
                         <li>Select month and enter consumer number</li>
                         <li>Click "Search PDF for Consumer Bill"</li>
-                        <li>The system will scan the PDF and extract the matching page</li>
+                        <li>The system will fetch the page number from server</li>
                         <li>Download or print the extracted bill</li>
                     </ol>
                     <div class="note">
-                        <strong>Note:</strong> All processing happens locally in your browser. No data is uploaded to any server.
+                        <strong>Note:</strong> Fast server-side search eliminates PDF scanning delays.
                     </div>
                 </div>
             </div>
@@ -771,8 +771,8 @@
         <footer>
             <div class="footer-content">
                 <div class="footer-text">
-                    <p>Internal Tool • All processing is done locally in your browser</p>
-                    <p>No data leaves your computer • Secure & Private</p>
+                    <p>Internal Tool • Fast server-side search for instant results</p>
+                    <p>Secure & Private • Minimal browser processing</p>
                 </div>
             </div>
         </footer>
@@ -859,6 +859,9 @@
         const statusIndicator = document.getElementById('statusIndicator');
         const resultContainer = document.getElementById('resultContainer');
 
+        // Backend API URL
+        const BACKEND_API_URL = 'https://pgvcl-bill-backend.jadejas-k7777.workers.dev/find';
+
         function init() {
             setupEventListeners();
             updateUI();
@@ -901,36 +904,100 @@
             updateUI();
             
             try {
-                showMessage('info', `Loading ${state.selectedMonth}.pdf...`);
+                showMessage('info', `Searching for consumer ${state.consumerNumber} in ${state.selectedMonth}...`);
                 
-                await fetchPdfFromServer();
-                await loadPdfDocument();
-                await searchPdfPages();
+                // Step 1: Call backend API to get page number
+                const backendResult = await fetchPageNumberFromBackend();
                 
-                if (state.matchedPage !== null) {
-                    await extractPdfPage();
-                    showMessage('success', `Bill found for consumer ${state.consumerNumber} on page ${state.matchedPage + 1}`);
-                } else {
-                    showMessage('error', `Consumer number ${state.consumerNumber} not found in ${state.selectedMonth}.pdf`);
+                // If backend returned an error, stop processing
+                if (backendResult && backendResult.error) {
+                    showMessage('error', backendResult.error);
+                    return;
                 }
                 
+                // If no page found, stop processing
+                if (state.matchedPage === null) {
+                    showMessage('error', `Consumer number ${state.consumerNumber} not found in ${state.selectedMonth}.pdf`);
+                    return;
+                }
+                
+                // Step 2: If page found, fetch and extract the PDF
+                await fetchPdfFromServer();
+                await loadPdfDocument();
+                await extractPdfPage();
+                showMessage('success', `Bill found for consumer ${state.consumerNumber} on page ${state.matchedPage + 1}`);
+                
             } catch (error) {
-                console.error('Error during PDF processing:', error);
+                console.error('Error during bill search:', error);
                 showMessage('error', `Error: ${error.message}`);
             } finally {
                 state.isProcessing = false;
                 updateUI();
+                // Hide progress container after 1 second
+                setTimeout(() => {
+                    if (!state.isProcessing) {
+                        progressContainer.classList.remove('active');
+                    }
+                }, 1000);
+            }
+        }
+
+        async function fetchPageNumberFromBackend() {
+            showProgress('Fetching page number from server...', 20);
+            
+            try {
+                const url = `${BACKEND_API_URL}?month=${encodeURIComponent(state.selectedMonth)}&consumer=${encodeURIComponent(state.consumerNumber)}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                // Check if backend returned an error
+                if (result && result.error) {
+                    showProgress('✗ ' + result.error, 40);
+                    pageCounter.textContent = result.error;
+                    return { error: result.error };
+                }
+                
+                if (result && typeof result.page === 'number') {
+                    state.matchedPage = result.page - 1; // Convert to 0-based index
+                    showProgress(`✓ Found on page ${result.page}`, 40);
+                    pageCounter.textContent = `Found on page ${result.page}`;
+                    return result;
+                } else {
+                    // No page found
+                    state.matchedPage = null;
+                    showProgress('✗ Consumer number not found', 40);
+                    pageCounter.textContent = 'Consumer number not found';
+                    return null;
+                }
+                
+            } catch (error) {
+                console.error('Error fetching from backend:', error);
+                showProgress('✗ Connection failed', 40);
+                throw new Error(`Failed to connect to server: ${error.message}`);
             }
         }
 
         async function fetchPdfFromServer() {
-            showProgress(`Fetching ${state.selectedMonth}.pdf...`, 0);
+            showProgress(`Fetching ${state.selectedMonth}.pdf...`, 50);
             
             try {
                 const timestamp = Date.now();
                 const pdfUrl = `https://shiv0087.github.io/bill-extractor/pdfs/${state.selectedMonth}.pdf?t=${timestamp}`;
                 
-                showProgress(`Downloading PDF...`, 10);
+                showProgress(`Downloading PDF...`, 60);
                 
                 const response = await fetch(pdfUrl, {
                     method: 'GET',
@@ -950,7 +1017,7 @@
                 
                 state.pdfFile = new Uint8Array(arrayBuffer);
                 
-                showProgress(`PDF loaded (${Math.round(arrayBuffer.byteLength / 1024)} KB)`, 30);
+                showProgress(`PDF loaded (${Math.round(arrayBuffer.byteLength / 1024)} KB)`, 70);
                 
             } catch (error) {
                 console.error('Error fetching PDF:', error);
@@ -959,7 +1026,7 @@
         }
 
         async function loadPdfDocument() {
-            showProgress('Parsing PDF document...', 40);
+            showProgress('Parsing PDF document...', 75);
             
             if (!state.pdfFile || state.pdfFile.length === 0) {
                 throw new Error('No PDF data loaded');
@@ -976,7 +1043,7 @@
                 state.pdfDoc = await loadingTask.promise;
                 state.totalPages = state.pdfDoc.numPages;
                 
-                showProgress(`PDF parsed. Total pages: ${state.totalPages}`, 50);
+                showProgress(`PDF parsed. Total pages: ${state.totalPages}`, 80);
                 
             } catch (error) {
                 console.error('Error loading PDF:', error);
@@ -984,65 +1051,10 @@
             }
         }
 
-        async function searchPdfPages() {
-            if (!state.pdfDoc) return;
-            
-            showProgress('Scanning for consumer number...', 60);
-            
-            const batchSize = 3; // Optimized for office PCs
-            
-            for (let pageNum = 1; pageNum <= state.totalPages; pageNum += batchSize) {
-                const progressPercent = Math.min(60 + (pageNum / state.totalPages * 30), 90);
-                showProgress(`Scanning page ${pageNum} of ${state.totalPages}...`, progressPercent);
-                pageCounter.textContent = `Page ${pageNum} of ${state.totalPages}`;
-                
-                const endPage = Math.min(pageNum + batchSize - 1, state.totalPages);
-                const batchPromises = [];
-                
-                for (let i = pageNum; i <= endPage; i++) {
-                    batchPromises.push(processPage(i));
-                }
-                
-                const results = await Promise.all(batchPromises);
-                
-                const matchedResult = results.find(result => result.found);
-                if (matchedResult) {
-                    state.matchedPage = matchedResult.pageNum - 1;
-                    showProgress(`✓ Found on page ${state.matchedPage + 1}`, 95);
-                    pageCounter.textContent = `Found on page ${state.matchedPage + 1} of ${state.totalPages}`;
-                    return; // Stop scanning immediately
-                }
-                
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            
-            showProgress('✗ Consumer number not found', 100);
-            pageCounter.textContent = `Scanned all ${state.totalPages} pages`;
-        }
-
-        async function processPage(pageNum) {
-            try {
-                const page = await state.pdfDoc.getPage(pageNum);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => item.str).join(' ');
-                
-                page.cleanup();
-                
-                // Optimized search - direct string match
-                const normalizedText = pageText.replace(/\s+/g, '');
-                const found = normalizedText.includes(state.consumerNumber);
-                
-                return { pageNum, found };
-            } catch (error) {
-                console.warn(`Error processing page ${pageNum}:`, error);
-                return { pageNum, found: false };
-            }
-        }
-
         async function extractPdfPage() {
             if (state.matchedPage === null || !state.pdfDoc) return;
             
-            showProgress('Creating original quality PDF...', 95);
+            showProgress('Extracting bill page...', 85);
             
             try {
                 // Clean up previous URL
@@ -1183,13 +1195,17 @@
             
             page.drawText(`📍 BILL LOCATION`, { x: 70, y: 675, size: 18, font: helveticaBold });
             page.drawText(`Page Number:`, { x: 70, y: 640, size: 16, font: helveticaBold });
-            page.drawText(`${state.matchedPage + 1} of ${state.totalPages}`, { 
+            
+            // FIXED: Safely display total pages
+            const displayTotalPages = state.totalPages || 'Unknown';
+            page.drawText(`${state.matchedPage + 1} of ${displayTotalPages}`, { 
                 x: 200, y: 640, size: 24, font: helveticaBold, color: rgb(0, 0.33, 0.65) 
             });
             
             // Instructions
             page.drawText(`Instructions:`, { x: 50, y: 550, size: 16, font: helveticaBold });
             
+            // FIXED: Use safe total pages in instructions
             const instructions = [
                 `1. Open ${state.selectedMonth}.pdf file`,
                 `2. Navigate to page ${state.matchedPage + 1}`,
